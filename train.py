@@ -1,13 +1,14 @@
 import importlib
+
 import hydra
 import lightning as L
-
-from omegaconf import DictConfig, OmegaConf
 from hydra.utils import to_absolute_path
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
+from omegaconf import DictConfig, OmegaConf
 
-from models.vae.model import VAEAutoEncoder
 from data.datamodule import MVTecDataModule
+from models.vae.model import VAEAutoEncoder
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
@@ -55,6 +56,21 @@ def main(cfg: DictConfig):
         log_model=cfg.logger.log_model,
     )
 
+    early_stopping = EarlyStopping(
+        monitor=cfg.trainer.early_stopping.monitor,
+        mode=cfg.trainer.early_stopping.mode,
+        patience=cfg.trainer.early_stopping.patience,
+        min_delta=cfg.trainer.early_stopping.min_delta,
+        verbose=True,
+    )
+
+    checkpoint_callback = ModelCheckpoint(
+        monitor=cfg.trainer.checkpoint.monitor,
+        mode=cfg.trainer.checkpoint.mode,
+        save_top_k=cfg.trainer.checkpoint.save_top_k,
+        filename=cfg.model.name + "-{epoch:02d}",
+    )
+
     trainer = L.Trainer(
         max_epochs=cfg.trainer.max_epochs,
         accelerator=cfg.trainer.accelerator,
@@ -64,12 +80,16 @@ def main(cfg: DictConfig):
         deterministic=cfg.trainer.deterministic,
         benchmark=cfg.trainer.benchmark,
         logger=logger,
+        callbacks=[
+            early_stopping,
+            checkpoint_callback,
+        ],
     )
 
     # Esta se encarga de entrenar
     trainer.fit(model, datamodule=datamodule)
     # Aquí se loggean reconstrucciones good vs anomalías.
-    trainer.test(model, datamodule=datamodule)
+    trainer.test(model, datamodule=datamodule, ckpt_path="best")
 
 
 if __name__ == "__main__":
