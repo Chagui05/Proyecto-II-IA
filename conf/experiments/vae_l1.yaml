@@ -1,0 +1,5 @@
+defaults:
+  - override /model: vae
+
+model:
+  loss_type: "l1"

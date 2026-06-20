@@ -1,0 +1,8 @@
+defaults:
+  - data: mvtec
+  - model: vae
+  - trainer: default
+  - logger: wandb
+  - _self_
+
+seed: 42

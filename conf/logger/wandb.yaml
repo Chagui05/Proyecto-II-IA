@@ -1,0 +1,3 @@
+project: "tarea-03-autoencoders"
+name: "${model.name}_${model.loss_type}_z${model.latent_dim}"
+log_model: false
