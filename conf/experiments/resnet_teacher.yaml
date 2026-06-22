@@ -1,0 +1,24 @@
+# @package _global_
+
+# Etapa 1 del destilado: fine-tuning del teacher ResNet-18 preentrenado
+# sobre las 10 clases sin defectos. Genera el checkpoint que luego usa el
+# student (Modelo B).
+
+defaults:
+  - override /model: resnet_teacher
+  - _self_
+
+data:
+  batch_size: 32
+
+model:
+  lr: 0.0001
+  num_classes: 10
+
+logger:
+  name: resnet_teacher
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/resnet_teacher
+    export_path: checkpoints/best/resnet_teacher_best.ckpt

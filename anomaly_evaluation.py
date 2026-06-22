@@ -8,6 +8,7 @@ from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 
 from data.datamodule import MVTecDataModule
+from models.resnet_distill.model import ResNetDistillClassifier
 from models.resnet_scratch.model import ResNetScratchClassifier
 from models.u_net.model import UNetAutoEncoder
 from utils.evaluation_helpers import (
@@ -25,6 +26,10 @@ def load_model_from_cfg(cfg: DictConfig):
 
     if cfg.model.name == "resnet_scratch":
         return ResNetScratchClassifier.load_from_checkpoint(checkpoint_path)
+
+    if cfg.model.name == "resnet_distill":
+        # El student destilado no necesita el teacher para inferir embeddings.
+        return ResNetDistillClassifier.load_from_checkpoint(checkpoint_path)
 
     raise ValueError(f"Modelo no soportado: {cfg.model.name}")
 

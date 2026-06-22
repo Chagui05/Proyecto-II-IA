@@ -1,0 +1,28 @@
+# @package _global_
+
+# Modelo B (student destilado) - variante con menor temperatura y
+# balance 50/50 entre destilado y supervisión.
+# T=2.0, alpha=0.5.
+
+defaults:
+  - override /model: resnet_distill
+  - _self_
+
+data:
+  batch_size: 32
+
+model:
+  lr: 0.001
+  base_channels: 64
+  num_classes: 10
+  temperature: 2.0
+  alpha: 0.5
+  teacher_checkpoint_path: checkpoints/best/resnet_teacher_best.ckpt
+
+logger:
+  name: resnet_b_T2_alpha05
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/resnet_b_T2_alpha05
+    export_path: checkpoints/best/resnet_b_T2_alpha05_best.ckpt

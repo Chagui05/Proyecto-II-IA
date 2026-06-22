@@ -1,0 +1,27 @@
+# @package _global_
+
+# Modelo B (student destilado) - configuración base.
+# T=4.0, alpha=0.7: bastante peso al teacher con logits suavizados.
+
+defaults:
+  - override /model: resnet_distill
+  - _self_
+
+data:
+  batch_size: 32
+
+model:
+  lr: 0.001
+  base_channels: 64
+  num_classes: 10
+  temperature: 4.0
+  alpha: 0.7
+  teacher_checkpoint_path: checkpoints/best/resnet_teacher_best.ckpt
+
+logger:
+  name: resnet_b_baseline
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/resnet_b_baseline
+    export_path: checkpoints/best/resnet_b_baseline_best.ckpt
