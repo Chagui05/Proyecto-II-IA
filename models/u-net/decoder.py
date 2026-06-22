@@ -31,7 +31,9 @@ class UNetDecoder(nn.Module):
 
             self.up_convs.append(
                 nn.Sequential(
-                    nn.ConvTranspose2d(in_ch, out_ch, kernel_size=4, stride=2, padding=1),
+                    nn.ConvTranspose2d(
+                        in_ch, out_ch, kernel_size=4, stride=2, padding=1
+                    ),
                     nn.BatchNorm2d(out_ch),
                     nn.ReLU(inplace=True),
                 )
@@ -49,8 +51,12 @@ class UNetDecoder(nn.Module):
         # Última capa: upsample a resolución original sin skip connection
         # reversed_ch[-1] → out_channels (ej: 32 → 3)
         final_layers = [
-            nn.ConvTranspose2d(reversed_ch[-1], out_channels, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(
+                reversed_ch[-1], out_channels, kernel_size=4, stride=2, padding=1
+            ),
         ]
+        # Le ponemos un sigmoid debido a que inicialmente las imágenes venían de ToTensor(), que
+        # da rangos entre 0 y 1
         if use_sigmoid:
             final_layers.append(nn.Sigmoid())
 
@@ -61,7 +67,9 @@ class UNetDecoder(nn.Module):
         # Los skips vienen de superficial a profundo; los procesamos al revés
         reversed_skips = list(reversed(skips))
 
-        for up_conv, refine_conv, skip in zip(self.up_convs, self.refine_convs, reversed_skips):
+        for up_conv, refine_conv, skip in zip(
+            self.up_convs, self.refine_convs, reversed_skips
+        ):
             h = up_conv(h)
             h = torch.cat([h, skip], dim=1)
             h = refine_conv(h)

@@ -1,16 +1,14 @@
+import lightning as L
+import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
-
-from torchmetrics.functional import structural_similarity_index_measure as ssim
-import wandb
 import torchvision
-import matplotlib.pyplot as plt
+import wandb
 from sklearn.manifold import TSNE
+from torchmetrics.functional import structural_similarity_index_measure as ssim
 
-from .encoder import UNetEncoder
 from .decoder import UNetDecoder
-
-import lightning as L
+from .encoder import UNetEncoder
 
 
 class UNetAutoEncoder(L.LightningModule):
@@ -45,6 +43,7 @@ class UNetAutoEncoder(L.LightningModule):
         bottleneck, skips = self.encoder(x)
         x_hat = self.decoder(bottleneck, skips)
         # Global average pooling del bottleneck como representación latente para t-SNE
+        # No se usa Flatten porque quedaría un vector enorme, inviable para las métricas más adelante
         z = bottleneck.mean(dim=[2, 3])  # [B, C]
         return x_hat, z
 
@@ -78,7 +77,7 @@ class UNetAutoEncoder(L.LightningModule):
         self.log("train/loss", loss, prog_bar=False, on_step=False, on_epoch=True)
         return loss
 
-# --------------------------------------- Validation --------------------------------#
+    # --------------------------------------- Validation --------------------------------#
 
     def on_validation_epoch_start(self):
         self.val_z = []
@@ -119,7 +118,8 @@ class UNetAutoEncoder(L.LightningModule):
                 caption="Fila 1: originales | Fila 2: reconstrucciones",
             )
 
-        if len(self.val_z) > 0:
+        # Solo loggear cada 4 epocas el t-SNE
+        if len(self.val_z) > 0 and self.current_epoch % 4 == 0:
             z_all = torch.cat(self.val_z, dim=0)
             y_all = torch.cat(self.val_y, dim=0)
             self._log_tsne(z_all, y_all)
@@ -129,7 +129,7 @@ class UNetAutoEncoder(L.LightningModule):
         self.val_x.clear()
         self.val_x_hat.clear()
 
-# --------------------------------------- Testing --------------------------------#
+    # --------------------------------------- Testing --------------------------------#
 
     def on_test_epoch_start(self):
         self.test_good_x = []
@@ -190,17 +190,21 @@ class UNetAutoEncoder(L.LightningModule):
 
     ## ------------------ Funciones Auxiliares para logging -------------------------------- ##
 
-    def _log_image_grid(self, key: str, images: torch.Tensor, caption: str = "", nrow: int = 16):
+    def _log_image_grid(
+        self, key: str, images: torch.Tensor, caption: str = "", nrow: int = 16
+    ):
         if self.logger is None:
             return
 
         grid = torchvision.utils.make_grid(images, nrow=nrow, normalize=False)
         grid_np = grid.detach().cpu().permute(1, 2, 0).numpy()
 
-        self.logger.experiment.log({
-            key: wandb.Image(grid_np, caption=caption),
-            "epoch": self.current_epoch,
-        })
+        self.logger.experiment.log(
+            {
+                key: wandb.Image(grid_np, caption=caption),
+                "epoch": self.current_epoch,
+            }
+        )
 
     def _log_tsne(self, z: torch.Tensor, labels: torch.Tensor):
         if self.logger is None:
@@ -230,9 +234,11 @@ class UNetAutoEncoder(L.LightningModule):
         fig.colorbar(scatter, ax=ax, label="Clase")
         fig.tight_layout()
 
-        self.logger.experiment.log({
-            "val/latent_tsne": wandb.Image(fig),
-            "epoch": self.current_epoch,
-        })
+        self.logger.experiment.log(
+            {
+                "val/latent_tsne": wandb.Image(fig),
+                "epoch": self.current_epoch,
+            }
+        )
 
         plt.close(fig)

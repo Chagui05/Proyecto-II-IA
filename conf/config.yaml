@@ -1,8 +1,21 @@
-defaults:
-  - data: mvtec
-  - model: vae
-  - trainer: default
-  - logger: wandb
-  - _self_
+max_epochs: 100
+accelerator: auto
+devices: auto
+check_val_every_n_epoch: 1
+log_every_n_steps: 10
+deterministic: true
+benchmark: false
 
-seed: 42
+early_stopping:
+  monitor: val/loss
+  mode: min
+  patience: 10
+  min_delta: 0.0001
+
+checkpoint:
+  monitor: val/loss
+  mode: min
+  save_top_k: 1
+  dirpath: checkpoints/${model.name}
+  filename: ${model.name}-{epoch:02d}
+  export_path: checkpoints/best/${model.name}_best.ckpt

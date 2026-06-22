@@ -1,4 +1,6 @@
 import importlib
+import shutil
+from pathlib import Path
 
 import hydra
 import lightning as L
@@ -64,11 +66,15 @@ def main(cfg: DictConfig):
         verbose=True,
     )
 
+    checkpoint_dir = Path(to_absolute_path(cfg.trainer.checkpoint.dirpath))
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
     checkpoint_callback = ModelCheckpoint(
+        dirpath=checkpoint_dir,
         monitor=cfg.trainer.checkpoint.monitor,
         mode=cfg.trainer.checkpoint.mode,
         save_top_k=cfg.trainer.checkpoint.save_top_k,
-        filename=cfg.model.name + "-{epoch:02d}",
+        filename=cfg.trainer.checkpoint.filename,
     )
 
     trainer = L.Trainer(
@@ -86,10 +92,19 @@ def main(cfg: DictConfig):
         ],
     )
 
-    # Esta se encarga de entrenar
     trainer.fit(model, datamodule=datamodule)
-    # Aquí se loggean reconstrucciones good vs anomalías.
-    trainer.test(model, datamodule=datamodule, ckpt_path="best")
+
+    best_ckpt_path = checkpoint_callback.best_model_path
+
+    export_path = Path(to_absolute_path(cfg.trainer.checkpoint.export_path))
+    export_path.parent.mkdir(parents=True, exist_ok=True)
+
+    shutil.copy2(best_ckpt_path, export_path)
+
+    print(f"Mejor checkpoint original: {best_ckpt_path}")
+    print(f"Mejor checkpoint exportado en: {export_path}")
+
+    trainer.test(model, datamodule=datamodule, ckpt_path=str(export_path))
 
 
 if __name__ == "__main__":
