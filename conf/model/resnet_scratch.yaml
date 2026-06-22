@@ -1,0 +1,8 @@
+name: resnet_scratch
+
+in_channels: 3
+image_size: 128
+num_classes: 10
+base_channels: 64
+
+lr: 0.001

@@ -1,2 +1,4 @@
 dataset/
-data/
+outputs/
+output/
+data/cache/*.pt

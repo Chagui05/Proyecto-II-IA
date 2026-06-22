@@ -1,0 +1,4 @@
+# checkpoint_path: "data/cache/mvtec_anomaly_detection.pt"
+checkpoint_path: "/content/drive/MyDrive/Proyecto2/cache/mvtec_anomaly_detection.pt"
+batch_size: 32
+num_workers: 2

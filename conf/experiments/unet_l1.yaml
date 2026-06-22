@@ -1,5 +1,10 @@
 defaults:
-  - override /model: u-net
+  - override /model: u_net
 
 model:
-  loss_type: "l1"
+  lr: 0.001
+  loss_type: l1
+  hidden_channels: [32, 64, 128, 256]
+
+logger:
+  name: u_net_l1

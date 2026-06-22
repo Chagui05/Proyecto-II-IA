@@ -1,0 +1,18 @@
+defaults:
+  - override /model: resnet_scratch
+
+data:
+  batch_size: 32
+
+model:
+  lr: 0.001
+  base_channels: 64
+  num_classes: 10
+
+logger:
+  name: resnet_a_baseline
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/resnet_a_baseline
+    export_path: checkpoints/best/resnet_a_baseline_best.ckpt

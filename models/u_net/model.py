@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torchvision
 import wandb
 from sklearn.manifold import TSNE
+from torch import nn
 from torchmetrics.functional import structural_similarity_index_measure as ssim
 
 from .decoder import UNetDecoder
@@ -28,6 +29,8 @@ class UNetAutoEncoder(L.LightningModule):
 
         self.save_hyperparameters()
 
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+
         self.encoder = UNetEncoder(
             in_channels=in_channels,
             hidden_channels=hidden_channels,
@@ -42,9 +45,10 @@ class UNetAutoEncoder(L.LightningModule):
     def forward(self, x: torch.Tensor):
         bottleneck, skips = self.encoder(x)
         x_hat = self.decoder(bottleneck, skips)
-        # Global average pooling del bottleneck como representación latente para t-SNE
-        # No se usa Flatten porque quedaría un vector enorme, inviable para las métricas más adelante
-        z = bottleneck.mean(dim=[2, 3])  # [B, C]
+
+        # El global average pooling para extraer el z
+        z = self.pool(bottleneck)
+        z = torch.flatten(z, start_dim=1)
         return x_hat, z
 
     def reconstruction_loss(self, x_hat: torch.Tensor, x: torch.Tensor) -> torch.Tensor:

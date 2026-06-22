@@ -1,4 +1,3 @@
-import importlib
 from pathlib import Path
 
 import hydra
@@ -9,6 +8,8 @@ from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 
 from data.datamodule import MVTecDataModule
+from models.resnet_scratch.model import ResNetScratchClassifier
+from models.u_net.model import UNetAutoEncoder
 from utils.evaluation_helpers import (
     evaluate_model_with_mahalanobis,
     get_anomaly_labels,
@@ -19,20 +20,11 @@ from utils.evaluation_helpers import (
 def load_model_from_cfg(cfg: DictConfig):
     checkpoint_path = to_absolute_path(cfg.evaluation.checkpoint_path)
 
-    if cfg.model.name == "u-net":
-        unet_module = importlib.import_module("models.u-net.model")
-        UNetAutoEncoder = unet_module.UNetAutoEncoder
+    if cfg.model.name == "u_net":
         return UNetAutoEncoder.load_from_checkpoint(checkpoint_path)
 
     if cfg.model.name == "resnet_scratch":
-        resnet_module = importlib.import_module("models.resnet_scratch.model")
-        ResNetScratchClassifier = resnet_module.ResNetScratchClassifier
         return ResNetScratchClassifier.load_from_checkpoint(checkpoint_path)
-
-    if cfg.model.name == "resnet_distilled":
-        distilled_module = importlib.import_module("models.resnet_distilled.model")
-        DistilledResNetStudent = distilled_module.DistilledResNetStudent
-        return DistilledResNetStudent.load_from_checkpoint(checkpoint_path)
 
     raise ValueError(f"Modelo no soportado: {cfg.model.name}")
 
@@ -60,7 +52,7 @@ def main(cfg: DictConfig):
         test_dataloader=datamodule.test_dataloader(),
         device=cfg.evaluation.device,
         percentile=cfg.evaluation.percentile,
-        model_name=cfg.model.name,
+        model_name=cfg.logger.name,
     )
 
     output_dir = Path(to_absolute_path(cfg.evaluation.output_dir))

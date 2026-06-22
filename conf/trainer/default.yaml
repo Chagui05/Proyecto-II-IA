@@ -1,7 +1,21 @@
-max_epochs: 20
+max_epochs: 100
 accelerator: "gpu"
-devices: 1
+devices: auto
 check_val_every_n_epoch: 1
-log_every_n_steps: 1
+log_every_n_steps: 10
 deterministic: true
 benchmark: false
+
+early_stopping:
+  monitor: val/loss
+  mode: min
+  patience: 10
+  min_delta: 0.0001
+
+checkpoint:
+  monitor: val/loss
+  mode: min
+  save_top_k: 1
+  dirpath: checkpoints/${model.name}
+  filename: ${model.name}-{epoch:02d}
+  export_path: checkpoints/best/${model.name}_best.ckpt

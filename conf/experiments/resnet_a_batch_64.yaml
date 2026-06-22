@@ -1,0 +1,18 @@
+defaults:
+  - override /model: resnet_scratch
+
+data:
+  batch_size: 64
+
+model:
+  lr: 0.001
+  base_channels: 64
+  num_classes: 10
+
+logger:
+  name: resnet_a_batch_64
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/resnet_a_batch_64
+    export_path: checkpoints/best/resnet_a_batch_64_best.ckpt

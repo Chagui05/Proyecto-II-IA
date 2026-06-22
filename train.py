@@ -1,4 +1,3 @@
-import importlib
 import shutil
 from pathlib import Path
 
@@ -10,7 +9,8 @@ from lightning.pytorch.loggers import WandbLogger
 from omegaconf import DictConfig, OmegaConf
 
 from data.datamodule import MVTecDataModule
-from models.vae.model import VAEAutoEncoder
+from models.resnet_scratch.model import ResNetScratchClassifier
+from models.u_net.model import UNetAutoEncoder
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
@@ -26,21 +26,7 @@ def main(cfg: DictConfig):
         num_workers=cfg.data.num_workers,
     )
 
-    if cfg.model.name == "vae":
-        model = VAEAutoEncoder(
-            in_channels=cfg.model.in_channels,
-            image_size=cfg.model.image_size,
-            latent_dim=cfg.model.latent_dim,
-            hidden_channels=list(cfg.model.hidden_channels),
-            lr=cfg.model.lr,
-            beta=cfg.model.beta,
-            loss_type=cfg.model.loss_type,
-            use_sigmoid=cfg.model.use_sigmoid,
-        )
-    elif cfg.model.name == "u-net":
-        # importlib porque Python no permite importar módulos con guión via dot-notation
-        unet_module = importlib.import_module("models.u-net.model")
-        UNetAutoEncoder = unet_module.UNetAutoEncoder
+    if cfg.model.name == "u_net":
         model = UNetAutoEncoder(
             in_channels=cfg.model.in_channels,
             image_size=cfg.model.image_size,
@@ -49,6 +35,15 @@ def main(cfg: DictConfig):
             loss_type=cfg.model.loss_type,
             use_sigmoid=cfg.model.use_sigmoid,
         )
+
+    elif cfg.model.name == "resnet_scratch":
+        model = ResNetScratchClassifier(
+            in_channels=cfg.model.in_channels,
+            num_classes=cfg.model.num_classes,
+            base_channels=cfg.model.base_channels,
+            lr=cfg.model.lr,
+        )
+
     else:
         raise ValueError(f"Modelo no soportado: {cfg.model.name}")
 
