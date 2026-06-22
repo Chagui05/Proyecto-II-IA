@@ -1,6 +1,6 @@
 defaults:
   - data: mvtec
-  - model: u_net
+  - model: resnet_scratch
   - trainer: default
   - logger: wandb
   - evaluation: default
