@@ -1,5 +1,8 @@
+# @package _global_
+
 defaults:
   - override /model: resnet_scratch
+  - _self_
 
 data:
   batch_size: 32
