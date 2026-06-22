@@ -1,0 +1,4 @@
+checkpoint_path: ${trainer.checkpoint.export_path}
+output_dir: outputs/anomaly_evaluation/${model.name}
+device: cuda
+percentile: 95

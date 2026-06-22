@@ -1,5 +1,0 @@
-defaults:
-  - override /model: u-net
-
-model:
-  loss_type: "l2"
