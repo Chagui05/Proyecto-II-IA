@@ -1,4 +1,4 @@
-name: "u-net"
+name: "u_net"
 
 in_channels: 3
 image_size: 128

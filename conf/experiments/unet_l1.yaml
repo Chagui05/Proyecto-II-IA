@@ -2,11 +2,18 @@
 
 defaults:
   - override /model: u_net
+  - _self_
 
 model:
+  name: u_net
   lr: 0.001
   loss_type: l1
   hidden_channels: [32, 64, 128, 256]
 
 logger:
   name: u_net_l1
+
+trainer:
+  checkpoint:
+    dirpath: checkpoints/u_net_l1
+    export_path: checkpoints/best/u_net_best.ckpt

@@ -20,7 +20,7 @@ from utils.evaluation_helpers import (
 def load_model_from_cfg(cfg: DictConfig):
     checkpoint_path = to_absolute_path(cfg.evaluation.checkpoint_path)
 
-    if cfg.model.name == "u_net":
+    if cfg.model.name in ["u_net", "u-net"]:
         return UNetAutoEncoder.load_from_checkpoint(checkpoint_path)
 
     if cfg.model.name == "resnet_scratch":

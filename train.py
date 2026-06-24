@@ -26,7 +26,7 @@ def main(cfg: DictConfig):
         num_workers=cfg.data.num_workers,
     )
 
-    if cfg.model.name == "u-net":
+    if cfg.model.name in ["u_net", "u-net"]:
         model = UNetAutoEncoder(
             in_channels=cfg.model.in_channels,
             image_size=cfg.model.image_size,
