@@ -1,0 +1,8 @@
+name: resnet_teacher
+
+num_classes: 10
+image_size: 128
+
+# Fine-tuning de un ResNet-18 preentrenado en ImageNet.
+pretrained: true
+lr: 0.0001

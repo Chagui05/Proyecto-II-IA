@@ -1,0 +1,15 @@
+name: resnet_distill
+
+in_channels: 3
+image_size: 128
+num_classes: 10
+base_channels: 64
+
+lr: 0.001
+
+# Hiperparámetros del destilado (teacher-student).
+temperature: 4.0
+alpha: 0.7
+
+# Checkpoint del teacher (ResNet-18 fine-tuned) ya entrenado.
+teacher_checkpoint_path: checkpoints/best/resnet_teacher_best.ckpt

@@ -2,3 +2,6 @@ dataset/
 outputs/
 output/
 data/cache/*.pt
+__pycache__/
+*.pyc
+checkpoints/

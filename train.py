@@ -9,7 +9,9 @@ from lightning.pytorch.loggers import WandbLogger
 from omegaconf import DictConfig, OmegaConf
 
 from data.datamodule import MVTecDataModule
+from models.resnet_distill.model import ResNetDistillClassifier
 from models.resnet_scratch.model import ResNetScratchClassifier
+from models.resnet_teacher.model import ResNet18Teacher
 from models.u_net.model import UNetAutoEncoder
 
 
@@ -43,6 +45,35 @@ def main(cfg: DictConfig):
             base_channels=cfg.model.base_channels,
             lr=cfg.model.lr,
         )
+
+    elif cfg.model.name == "resnet_teacher":
+        model = ResNet18Teacher(
+            num_classes=cfg.model.num_classes,
+            lr=cfg.model.lr,
+            pretrained=cfg.model.pretrained,
+        )
+
+    elif cfg.model.name == "resnet_distill":
+        model = ResNetDistillClassifier(
+            in_channels=cfg.model.in_channels,
+            num_classes=cfg.model.num_classes,
+            base_channels=cfg.model.base_channels,
+            lr=cfg.model.lr,
+            temperature=cfg.model.temperature,
+            alpha=cfg.model.alpha,
+        )
+
+        # Modelo B: cargamos el teacher ya entrenado (etapa 1) y lo congelamos.
+        teacher_ckpt = to_absolute_path(cfg.model.teacher_checkpoint_path)
+        if not Path(teacher_ckpt).exists():
+            raise FileNotFoundError(
+                "No se encontró el checkpoint del teacher en "
+                f"{teacher_ckpt}. Entrena primero el teacher con "
+                "`experiments=resnet_teacher`."
+            )
+
+        teacher = ResNet18Teacher.load_from_checkpoint(teacher_ckpt)
+        model.set_teacher(teacher)
 
     else:
         raise ValueError(f"Modelo no soportado: {cfg.model.name}")
